@@ -8,8 +8,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.Toast;
+
+import com.crazy.specialists.location.LocationFinder;
 
 public class FriendlyGPSpy extends AppCompatActivity {
+    LocationFinder gps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,10 +27,38 @@ public class FriendlyGPSpy extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own sudai! brudai!", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Replace with your own sudai! brudaifgfgfgfgfg!", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
             }
         });
+
+        Button locationButton = (Button) findViewById(R.id.locationButton);
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getCurrentLocation();
+            }
+        });
+
+
+    }
+
+    private void getCurrentLocation() {
+        gps = new LocationFinder(FriendlyGPSpy.this);
+
+        // check if GPS enabled
+        if(gps.canGetLocation()){
+            double latitude = gps.getLatitude();
+            double longitude = gps.getLongitude();
+
+            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+        }else{
+            // can't get location
+            // GPS or Network is not enabled
+            // Ask user to enable GPS/network in settings
+            gps.showSettingsAlert();
+        }
     }
 
     @Override
