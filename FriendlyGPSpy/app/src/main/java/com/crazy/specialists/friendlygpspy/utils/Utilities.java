@@ -1,5 +1,6 @@
 package com.crazy.specialists.friendlygpspy.utils;
 
+import android.content.Context;
 import android.widget.Toast;
 
 import java.net.InetAddress;
@@ -15,8 +16,8 @@ public class Utilities {
     private Utilities() {
     }
 
-    public static void showToast(final String message) {
-        Toast.makeText(null, message, Toast.LENGTH_LONG).show();
+    public static void showToast(final Context context, final String message) {
+        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     }
 
     /**

@@ -1,10 +1,10 @@
 package com.crazy.specialists.friendlygpspy.communication;
 
-import android.provider.Contacts;
+import android.content.Context;
+import android.view.View;
 
 import com.crazy.specialists.friendlygpspy.communication.client.SocketClient;
 import com.crazy.specialists.friendlygpspy.communication.server.SocketServer;
-import com.crazy.specialists.friendlygpspy.utils.Utilities;
 
 import java.io.IOException;
 
@@ -22,12 +22,12 @@ public class CommsManager {
     private SocketClient socketClient;
     private Thread clientThread;
 
-    private final String myIp;
     private final String endpointIp;
+    private final Context context;
 
-    public CommsManager(final String endpointIp) {
-        this.myIp = Utilities.getIPAddress(true);
+    public CommsManager(final Context cnt, final String endpointIp) {
         this.endpointIp = endpointIp;
+        context = cnt;
     }
 
     public void start() {
@@ -36,13 +36,13 @@ public class CommsManager {
     }
 
     private void startServer() {
-        socketServer = new SocketServer(SERVER_PORT);
+        socketServer = new SocketServer(context, SERVER_PORT);
         serverThread = new Thread(socketServer);
         serverThread.start();
     }
 
     private void startClient() {
-        socketClient = new SocketClient(endpointIp, SERVER_PORT);
+        socketClient = new SocketClient(context, endpointIp, SERVER_PORT);
         clientThread = new Thread(socketClient);
         clientThread.start();
     }
@@ -55,5 +55,19 @@ public class CommsManager {
             socketClient.close();
         }
 
+    }
+
+    public View.OnClickListener createSendLocationListener() {
+        return new SendLocationListener();
+    }
+
+    class SendLocationListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            if (socketClient != null) {
+                socketClient.sendData("Location123");
+            }
+        }
     }
 }

@@ -1,20 +1,34 @@
 package com.crazy.specialists.friendlygpspy;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
+import com.crazy.specialists.friendlygpspy.communication.CommsManager;
+import com.crazy.specialists.friendlygpspy.utils.Utilities;
 import com.crazy.specialists.location.LocationFinder;
 
 public class FriendlyGPSpy extends AppCompatActivity {
     LocationFinder gps;
+
+    private static final String PAIRED_IP_PROPERTY = "pairedIp";
+    private static final String DEFAULT_IP = "localhost";
+
+    private CommsManager commsManager;
+    private FloatingActionButton requestLocationBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +37,8 @@ public class FriendlyGPSpy extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        requestLocationBtn = (FloatingActionButton) findViewById(R.id.fab);
+        requestLocationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own sudai! brudaifgfgfgfgfg!", Snackbar.LENGTH_LONG)
@@ -62,6 +76,30 @@ public class FriendlyGPSpy extends AppCompatActivity {
     }
 
     @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        init();
+        requestLocationBtn.setOnClickListener(commsManager.createSendLocationListener());
+    }
+
+    private void init() {
+        SharedPreferences sharedPref = getSharedPreferences();
+        if(!sharedPref.contains(PAIRED_IP_PROPERTY))
+        {
+            pairToAnotherDevice();
+        }
+
+        String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
+        if (!DEFAULT_IP.equals(endpointIp))
+        {
+            commsManager = new CommsManager(getApplicationContext(), endpointIp);
+        }else{
+            Utilities.showToast(getApplicationContext(),"No IP configured. Nothing started");
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_friendly_gpspy, menu);
@@ -78,8 +116,67 @@ public class FriendlyGPSpy extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_show_my_ip) {
+            showMyIp();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void pairToAnotherDevice() {
+        final EditText text = new EditText(this);
+        text.setSingleLine();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Pair to device")
+                .setMessage("Enter IP of device you want to pair with")
+                .setView(text)
+                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        saveToSharedPreferences(PAIRED_IP_PROPERTY, text.getText().toString());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //User canceled dialog
+                    }
+        });
+
+        builder.create();
+        builder.show();
+    }
+
+    private void saveToSharedPreferences(final String key, final String value) {
+        SharedPreferences.Editor editor = getSharedPreferences().edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    private void showMyIp() {
+        String myIpV4 = Utilities.getIPAddress(true);
+        String myIpV6 = Utilities.getIPAddress(false);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("My IP")
+                .setMessage("IPv4: " + myIpV4  + "\n" + "IPv6: " + myIpV6)
+                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Done
+                    }
+                });
+
+        builder.create();
+        builder.show();
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        return this.getPreferences(Context.MODE_PRIVATE);
     }
 }

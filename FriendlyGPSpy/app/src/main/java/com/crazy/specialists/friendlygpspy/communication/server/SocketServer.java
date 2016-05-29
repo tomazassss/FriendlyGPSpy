@@ -1,5 +1,7 @@
 package com.crazy.specialists.friendlygpspy.communication.server;
 
+import android.content.Context;
+
 import com.crazy.specialists.friendlygpspy.utils.Utilities;
 
 import java.io.BufferedReader;
@@ -15,11 +17,13 @@ import java.net.Socket;
 public class SocketServer implements Runnable, Closeable {
 
     private ServerSocket serverSocket;
+    private final Context context;
     private final int serverPort;
     private boolean isStarted;
 
-    public SocketServer(final int port) {
+    public SocketServer(final Context cnt , final int port) {
         this.serverPort = port;
+        context = cnt;
     }
 
     @Override
@@ -80,7 +84,7 @@ public class SocketServer implements Runnable, Closeable {
                 try {
                     String locationRepresentation = input.readLine();
                     //TODO: Parse Location from string
-                    Utilities.showToast(locationRepresentation);
+                    Utilities.showToast(context, locationRepresentation);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
