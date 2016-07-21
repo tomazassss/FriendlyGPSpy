@@ -1,24 +1,22 @@
 package com.crazy.specialists.location;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.*;
 
 /**
- * Created by Nesta on 5/29/2016.
+ * Find phone location.
+ * Checks if gps or network is enabled.
  */
 public class LocationFinder extends Service implements LocationListener {
 
@@ -31,38 +29,22 @@ public class LocationFinder extends Service implements LocationListener {
     boolean isNetworkEnabled = false;
 
     // flag for GPS status
-    boolean canGetLocation = false;
+    Boolean canGetLocation = false;
 
     Location location; // location
-    double latitude; // latitude
-    double longitude; // longitude
-
-    // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
-
-    // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
 
     public LocationFinder(Context context) {
         this.mContext = context;
-        getLocation();
     }
 
-    public Location getLocation() {
+    public Location findLocation() {
         try {
             locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
 
-            // getting GPS status
-            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-
-            // getting network status
-            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-
-
-            if (isGPSEnabled && isNetworkEnabled && hasAllPermisions()) {
+            if (hasPermissions(locationManager)) {
                 this.canGetLocation = true;
                 // First get location from Network Provider
                 if (isNetworkEnabled ) {
@@ -70,10 +52,6 @@ public class LocationFinder extends Service implements LocationListener {
                     Log.d("Network", "Network");
                     if (locationManager != null) {
                         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if (location != null) {
-                            latitude = location.getLatitude();
-                            longitude = location.getLongitude();
-                        }
                     }
                 }
                 // if GPS Enabled get lat/long using GPS Services
@@ -83,10 +61,6 @@ public class LocationFinder extends Service implements LocationListener {
                         Log.d("GPS Enabled", "GPS Enabled");
                         if (locationManager != null) {
                             location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
                         }
                     }
                 }
@@ -94,18 +68,23 @@ public class LocationFinder extends Service implements LocationListener {
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
 
         return location;
     }
 
-    private boolean hasAllPermisions() {
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        {
+    private boolean hasPermissions(LocationManager locationManager) {
+        // getting GPS status
+        isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        // getting network status
+        isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        if(isGPSEnabled && isNetworkEnabled) {
             return true;
         }
-        else{
+        else {
             return false;
         }
     }
@@ -120,28 +99,11 @@ public class LocationFinder extends Service implements LocationListener {
         }
     }
 
-    /**
-     * Function to get latitude
-     * */
-    public double getLatitude(){
-        if(location != null){
-            latitude = location.getLatitude();
+    public Boolean canGetLocation() {
+        if(this.canGetLocation != null && this.canGetLocation == true) {
+            return true;
         }
-        return latitude;
-    }
-
-    /**
-     * Function to get longitude
-     * */
-    public double getLongitude(){
-        if(location != null){
-            longitude = location.getLongitude();
-        }
-        return longitude;
-    }
-
-    public boolean canGetLocation() {
-        return this.canGetLocation;
+        return false;
     }
 
     /**

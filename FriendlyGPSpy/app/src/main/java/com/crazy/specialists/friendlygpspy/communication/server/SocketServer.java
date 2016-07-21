@@ -1,6 +1,7 @@
 package com.crazy.specialists.friendlygpspy.communication.server;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.crazy.specialists.friendlygpspy.utils.Utilities;
 
@@ -84,7 +85,8 @@ public class SocketServer implements Runnable, Closeable {
                 try {
                     String locationRepresentation = input.readLine();
                     //TODO: Parse Location from string
-                    Utilities.showToast(context, locationRepresentation);
+                    //Utilities.showToast(context, locationRepresentation);
+                    Log.w("myApp" , locationRepresentation);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

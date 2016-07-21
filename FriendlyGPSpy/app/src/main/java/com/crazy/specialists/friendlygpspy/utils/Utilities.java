@@ -16,10 +16,6 @@ public class Utilities {
     private Utilities() {
     }
 
-    public static void showToast(final Context context, final String message) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-    }
-
     /**
      * Returns MAC address of the given interface name.
      * @param interfaceName eth0, wlan0 or NULL=use first interface

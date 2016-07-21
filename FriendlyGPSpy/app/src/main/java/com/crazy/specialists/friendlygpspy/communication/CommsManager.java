@@ -8,13 +8,12 @@ import com.crazy.specialists.friendlygpspy.communication.server.SocketServer;
 
 import java.io.IOException;
 
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.*;
+
 /**
  * Created by Tomas on 2016.05.29.
  */
 public class CommsManager {
-
-    //TODO: Should be configurable
-    private static final int SERVER_PORT = 46761;
 
     private SocketServer socketServer;
     private Thread serverThread;
@@ -57,8 +56,10 @@ public class CommsManager {
 
     }
 
-    public View.OnClickListener createSendLocationListener() {
-        return new SendLocationListener();
+    public void clientSendData(String data){
+        if (socketClient != null) {
+            socketClient.sendData(data);
+        }
     }
 
     class SendLocationListener implements View.OnClickListener {

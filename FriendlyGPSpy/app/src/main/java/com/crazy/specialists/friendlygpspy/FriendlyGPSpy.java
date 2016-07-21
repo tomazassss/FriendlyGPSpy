@@ -3,6 +3,7 @@ package com.crazy.specialists.friendlygpspy;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -10,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,14 +23,15 @@ import com.crazy.specialists.friendlygpspy.communication.CommsManager;
 import com.crazy.specialists.friendlygpspy.utils.Utilities;
 import com.crazy.specialists.location.LocationFinder;
 
-public class FriendlyGPSpy extends AppCompatActivity {
-    LocationFinder gps;
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.*;
 
-    private static final String PAIRED_IP_PROPERTY = "pairedIp";
-    private static final String DEFAULT_IP = "localhost";
+public class FriendlyGPSpy extends AppCompatActivity {
 
     private CommsManager commsManager;
     private FloatingActionButton requestLocationBtn;
+
+
+    private LocationFinder locationFinder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,7 @@ public class FriendlyGPSpy extends AppCompatActivity {
 
             }
         });
+        locationFinder = new LocationFinder(FriendlyGPSpy.this);
 
         Button locationButton = (Button) findViewById(R.id.locationButton);
         locationButton.setOnClickListener(new View.OnClickListener() {
@@ -55,23 +59,40 @@ public class FriendlyGPSpy extends AppCompatActivity {
             }
         });
 
+        Button muIpButton = (Button) findViewById(R.id.myIpButton);
+        muIpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String ipNotUsingIP4 = Utilities.getIPAddress(false);
+                Toast.makeText(getApplicationContext(), "Your ip is - : " + ipNotUsingIP4 + "\n not using ip4: " + ipNotUsingIP4, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        Button myTestButton = (Button) findViewById(R.id.myTestButton);
+        myTestButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                commsManager.clientSendData("Test kazkas ");
+                Log.w("myApp" , "sending");
+            }
+        });
+
+        commsManager = new CommsManager(getApplicationContext(), Utilities.getIPAddress(false));
+        commsManager.start();
+
 
     }
 
     private void getCurrentLocation() {
-        gps = new LocationFinder(FriendlyGPSpy.this);
-
+        Location location = locationFinder.findLocation();
         // check if GPS enabled
-        if(gps.canGetLocation()){
-            double latitude = gps.getLatitude();
-            double longitude = gps.getLongitude();
-
-            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
+        if(locationFinder.canGetLocation() && location != null){
+            Toast.makeText(getApplicationContext(), "Your Location is - \nLat: " + location.getLatitude() + "\nLong: " + location.getLongitude(), Toast.LENGTH_LONG).show();
         }else{
             // can't get location
             // GPS or Network is not enabled
             // Ask user to enable GPS/network in settings
-            gps.showSettingsAlert();
+            locationFinder.showSettingsAlert();
         }
     }
 
@@ -80,7 +101,15 @@ public class FriendlyGPSpy extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
 
         init();
-        requestLocationBtn.setOnClickListener(commsManager.createSendLocationListener());
+        View.OnClickListener l = new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+            }
+        };
+        requestLocationBtn.setOnClickListener(l);
     }
 
     private void init() {
@@ -90,12 +119,13 @@ public class FriendlyGPSpy extends AppCompatActivity {
             pairToAnotherDevice();
         }
 
-        String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
-        if (!DEFAULT_IP.equals(endpointIp))
+        //String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
+        String endpointIp = Utilities.getIPAddress(false);
+        if (DEFAULT_IP.equals(endpointIp))
         {
             commsManager = new CommsManager(getApplicationContext(), endpointIp);
         }else{
-            Utilities.showToast(getApplicationContext(),"No IP configured. Nothing started");
+            Toast.makeText(getApplicationContext(), "No IP configured. Nothing started", Toast.LENGTH_LONG).show();
         }
     }
 

@@ -27,4 +27,24 @@
         android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get my ip address"
+        android:id="@+id/myIpButton"
+        android:layout_marginTop="43dp"
+        android:layout_below="@+id/locationButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test servers"
+        android:id="@+id/myTestButton"
+        android:layout_marginTop="43dp"
+        android:layout_below="@+id/myIpButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>
