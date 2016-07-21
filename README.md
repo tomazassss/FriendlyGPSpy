@@ -15,3 +15,6 @@ Implementation:
 
 Configurable options:
 - Ip address
+
+Plans for future:
+- Notification if another person is near by
