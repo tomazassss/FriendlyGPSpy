@@ -1,6 +1,7 @@
 package com.crazy.specialists.friendlygpspy.communication.client;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -18,14 +19,12 @@ public class SocketClient implements Runnable, Closeable{
 
     private final String ip;
     private final int port;
-    private final Context context;
 
     private Socket socket;
 
-    public SocketClient(Context context, final String ip, final int port) {
+    public SocketClient(final String ip, final int port) {
         this.ip = ip;
         this.port = port;
-        this.context = context;
     }
 
     @Override
@@ -52,6 +51,7 @@ public class SocketClient implements Runnable, Closeable{
         if(socket != null) {
             PrintWriter out = null;
             try {
+                Log.w("myApp", "About to send: " + data);
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())),true);
                 out.println(data);
             } catch (IOException e) {

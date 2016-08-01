@@ -1,6 +1,6 @@
 package com.crazy.specialists.friendlygpspy.communication;
 
-import android.content.Context;
+import android.util.Log;
 import android.view.View;
 
 import com.crazy.specialists.friendlygpspy.communication.client.SocketClient;
@@ -8,7 +8,7 @@ import com.crazy.specialists.friendlygpspy.communication.server.SocketServer;
 
 import java.io.IOException;
 
-import static com.crazy.specialists.friendlygpspy.utils.Parameters.*;
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.SERVER_PORT;
 
 /**
  * Created by Tomas on 2016.05.29.
@@ -22,26 +22,26 @@ public class CommsManager {
     private Thread clientThread;
 
     private final String endpointIp;
-    private final Context context;
 
-    public CommsManager(final Context cnt, final String endpointIp) {
+    public CommsManager(final String endpointIp) {
+        Log.w("myApp" , "Creating comms manager" + this);
         this.endpointIp = endpointIp;
-        context = cnt;
     }
 
     public void start() {
+        Log.w("myApp" , "Starting comms manager" + this);
         startServer();
         startClient();
     }
 
     private void startServer() {
-        socketServer = new SocketServer(context, SERVER_PORT);
+        socketServer = new SocketServer(SERVER_PORT);
         serverThread = new Thread(socketServer);
         serverThread.start();
     }
 
     private void startClient() {
-        socketClient = new SocketClient(context, endpointIp, SERVER_PORT);
+        socketClient = new SocketClient(endpointIp, SERVER_PORT);
         clientThread = new Thread(socketClient);
         clientThread.start();
     }

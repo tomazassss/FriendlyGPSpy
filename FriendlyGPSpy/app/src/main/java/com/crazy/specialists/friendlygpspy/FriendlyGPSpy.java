@@ -23,7 +23,8 @@ import com.crazy.specialists.friendlygpspy.communication.CommsManager;
 import com.crazy.specialists.friendlygpspy.utils.Utilities;
 import com.crazy.specialists.location.LocationFinder;
 
-import static com.crazy.specialists.friendlygpspy.utils.Parameters.*;
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.DEFAULT_IP;
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.PAIRED_IP_PROPERTY;
 
 public class FriendlyGPSpy extends AppCompatActivity {
 
@@ -72,15 +73,11 @@ public class FriendlyGPSpy extends AppCompatActivity {
         myTestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.w("myApp" , "Sending...");
                 commsManager.clientSendData("Test kazkas ");
-                Log.w("myApp" , "sending");
+                Log.w("myApp" , "Sent...");
             }
         });
-
-        commsManager = new CommsManager(getApplicationContext(), Utilities.getIPAddress(false));
-        commsManager.start();
-
-
     }
 
     private void getCurrentLocation() {
@@ -120,10 +117,13 @@ public class FriendlyGPSpy extends AppCompatActivity {
         }
 
         //String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
+        //TODO Convert from hex
         String endpointIp = Utilities.getIPAddress(false);
-        if (DEFAULT_IP.equals(endpointIp))
+        Log.w("myApp" , "Using IP: " + endpointIp);
+        if (!DEFAULT_IP.equals(endpointIp))
         {
-            commsManager = new CommsManager(getApplicationContext(), endpointIp);
+            commsManager = new CommsManager(endpointIp);
+            commsManager.start();
         }else{
             Toast.makeText(getApplicationContext(), "No IP configured. Nothing started", Toast.LENGTH_LONG).show();
         }

@@ -1,9 +1,6 @@
 package com.crazy.specialists.friendlygpspy.communication.server;
 
-import android.content.Context;
 import android.util.Log;
-
-import com.crazy.specialists.friendlygpspy.utils.Utilities;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -15,79 +12,103 @@ import java.net.Socket;
 /**
  * Created by Tomas on 2016.05.29.
  */
-public class SocketServer implements Runnable, Closeable {
+public class SocketServer implements Runnable, Closeable
+{
 
     private ServerSocket serverSocket;
-    private final Context context;
     private final int serverPort;
     private boolean isStarted;
 
-    public SocketServer(final Context cnt , final int port) {
+    public SocketServer(final int port)
+    {
         this.serverPort = port;
-        context = cnt;
     }
 
     @Override
-    public void run() {
+    public void run()
+    {
         isStarted = true;
 
         Socket socket = null;
-        try {
+        try
+        {
             this.serverSocket = new ServerSocket(serverPort);
-        } catch (IOException e) {
+        } catch (IOException e)
+        {
             e.printStackTrace();
         }
-        while(!Thread.currentThread().isInterrupted() && isStarted) {
-            try {
+        while (!Thread.currentThread().isInterrupted() && isStarted)
+        {
+            try
+            {
                 socket = serverSocket.accept();
 
                 CommunicationThread commThread = new CommunicationThread(socket);
                 new Thread(commThread).start();
 
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
     }
 
     @Override
-    public void close() throws IOException {
-        if(isStarted) {
+    public void close() throws IOException
+    {
+        if (isStarted)
+        {
             isStarted = false;
-            if (serverSocket != null) {
+            if (serverSocket != null)
+            {
                 serverSocket.close();
             }
         }
     }
 
-    public ServerSocket getServerSocket() {
+    public ServerSocket getServerSocket()
+    {
         return serverSocket;
     }
 
-    class CommunicationThread implements Runnable {
-
+    class CommunicationThread implements Runnable
+    {
         private Socket clientSocket;
-
         private BufferedReader input;
 
-        public CommunicationThread(Socket clientSocket) {
+        public CommunicationThread(Socket clientSocket)
+        {
             this.clientSocket = clientSocket;
-            try {
+            try
+            {
                 this.input = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
-            } catch (IOException e) {
+            } catch (IOException e)
+            {
                 e.printStackTrace();
             }
         }
 
         @Override
-        public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
+        public void run()
+        {
+            while (!Thread.currentThread().isInterrupted())
+            {
+                try
+                {
                     String locationRepresentation = input.readLine();
-                    //TODO: Parse Location from string
-                    //Utilities.showToast(context, locationRepresentation);
-                    Log.w("myApp" , locationRepresentation);
-                } catch (IOException e) {
+                    if (locationRepresentation != null)
+                    {
+                        //TODO: Parse Location from string
+                        //Utilities.showToast(context, locationRepresentation);
+                        Log.w("myApp", "Server received: " + locationRepresentation);
+                    }
+                    else
+                    {
+                        Log.w("myApp", "Received null");
+                    }
+
+                } catch (IOException e)
+                {
                     e.printStackTrace();
                 }
             }
