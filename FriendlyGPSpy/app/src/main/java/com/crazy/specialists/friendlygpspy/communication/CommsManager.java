@@ -5,6 +5,7 @@ import android.view.View;
 
 import com.crazy.specialists.friendlygpspy.communication.client.SocketClient;
 import com.crazy.specialists.friendlygpspy.communication.server.SocketServer;
+import com.crazy.specialists.friendlygpspy.utils.Displayer;
 
 import java.io.IOException;
 
@@ -22,10 +23,12 @@ public class CommsManager {
     private Thread clientThread;
 
     private final String endpointIp;
+    private final Displayer displayer;
 
-    public CommsManager(final String endpointIp) {
+    public CommsManager(final String endpointIp, final Displayer displayer) {
         Log.w("myApp" , "Creating comms manager" + this);
         this.endpointIp = endpointIp;
+        this.displayer = displayer;
     }
 
     public void start() {
@@ -35,7 +38,7 @@ public class CommsManager {
     }
 
     private void startServer() {
-        socketServer = new SocketServer(SERVER_PORT);
+        socketServer = new SocketServer(SERVER_PORT, displayer);
         serverThread = new Thread(socketServer);
         serverThread.start();
     }

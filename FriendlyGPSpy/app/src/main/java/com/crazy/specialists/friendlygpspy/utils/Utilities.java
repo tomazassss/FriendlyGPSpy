@@ -1,7 +1,6 @@
 package com.crazy.specialists.friendlygpspy.utils;
 
-import android.content.Context;
-import android.widget.Toast;
+import com.google.common.net.InetAddresses;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -9,6 +8,8 @@ import java.net.SocketException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+
+import static com.crazy.specialists.friendlygpspy.utils.Parameters.DEFAULT_IP;
 
 /**
  * Created by Tomas on 2016.05.29.
@@ -60,7 +61,7 @@ public class Utilities
     /**
      * Get IP address from first non-localhost interface
      *
-     * @param ipv4 true=return ipv4, false=return ipv6
+     * @param useIPv4 true=return ipv4, false=return ipv6
      * @return address or empty string
      */
     public static String getIPAddress(boolean useIPv4)
@@ -83,7 +84,8 @@ public class Utilities
                         {
                             if (isIPv4)
                                 return sAddr;
-                        } else
+                        }
+                        else
                         {
                             if (!isIPv4)
                             {
@@ -125,11 +127,30 @@ public class Utilities
             }
         } catch (SocketException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             ip += "Something Wrong! " + e.toString() + "\n";
         }
 
         return ip;
+    }
+
+    public static boolean isIpValid(final String endpointIp)
+    {
+        boolean isValid = false;
+
+        if(!DEFAULT_IP.equalsIgnoreCase(endpointIp))
+        {
+            try
+            {
+                InetAddresses.forString(endpointIp);
+                isValid = true;
+            }
+            catch (IllegalArgumentException e)
+            {
+                isValid = false;
+            }
+        }
+
+        return isValid;
     }
 }

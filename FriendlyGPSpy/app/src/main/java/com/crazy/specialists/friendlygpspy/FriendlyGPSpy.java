@@ -1,7 +1,6 @@
 package com.crazy.specialists.friendlygpspy;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -20,8 +19,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.crazy.specialists.friendlygpspy.communication.CommsManager;
+import com.crazy.specialists.friendlygpspy.location.LocationFinder;
 import com.crazy.specialists.friendlygpspy.utils.Utilities;
-import com.crazy.specialists.location.LocationFinder;
 
 import static com.crazy.specialists.friendlygpspy.utils.Parameters.DEFAULT_IP;
 import static com.crazy.specialists.friendlygpspy.utils.Parameters.PAIRED_IP_PROPERTY;
@@ -42,41 +41,18 @@ public class FriendlyGPSpy extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         requestLocationBtn = (FloatingActionButton) findViewById(R.id.fab);
-        requestLocationBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own sudai! brudaifgfgfgfgfg!", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-
-            }
-        });
+        requestLocationBtn.setOnClickListener(view -> Snackbar.make(view, "Replace with your own sudai! brudaifgfgfgfgfg!", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
         locationFinder = new LocationFinder(FriendlyGPSpy.this);
 
         Button locationButton = (Button) findViewById(R.id.locationButton);
-        locationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getCurrentLocation();
-            }
-        });
-
-        Button muIpButton = (Button) findViewById(R.id.myIpButton);
-        muIpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String ipNotUsingIP4 = Utilities.getIPAddress(false);
-                Toast.makeText(getApplicationContext(), "Your ip is - : " + ipNotUsingIP4 + "\n not using ip4: " + ipNotUsingIP4, Toast.LENGTH_LONG).show();
-            }
-        });
+        locationButton.setOnClickListener(v -> getCurrentLocation());
 
         Button myTestButton = (Button) findViewById(R.id.myTestButton);
-        myTestButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.w("myApp" , "Sending...");
-                commsManager.clientSendData("Test kazkas ");
-                Log.w("myApp" , "Sent...");
-            }
+        myTestButton.setOnClickListener(v -> {
+            Log.w("myApp" , "Sending...");
+            commsManager.clientSendData("Test kazkas ");
+            Log.w("myApp" , "Sent...");
         });
     }
 
@@ -98,34 +74,39 @@ public class FriendlyGPSpy extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
 
         init();
-        View.OnClickListener l = new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
+        View.OnClickListener l = v -> {
 
-            }
         };
         requestLocationBtn.setOnClickListener(l);
     }
 
-    private void init() {
+    private void init()
+    {
         SharedPreferences sharedPref = getSharedPreferences();
+        pairToDeviceIfNeeded(sharedPref);
+        startCommsManager(sharedPref);
+    }
+
+    private void startCommsManager(final SharedPreferences sharedPref)
+    {
+        String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
+        commsManager = new CommsManager(endpointIp, (message) -> Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show());
+        commsManager.start();
+    }
+
+    private void pairToDeviceIfNeeded(final SharedPreferences sharedPref)
+    {
         if(!sharedPref.contains(PAIRED_IP_PROPERTY))
         {
             pairToAnotherDevice();
         }
-
-        //String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
-        //TODO Convert from hex
-        String endpointIp = Utilities.getIPAddress(false);
-        Log.w("myApp" , "Using IP: " + endpointIp);
-        if (!DEFAULT_IP.equals(endpointIp))
+        else
         {
-            commsManager = new CommsManager(endpointIp);
-            commsManager.start();
-        }else{
-            Toast.makeText(getApplicationContext(), "No IP configured. Nothing started", Toast.LENGTH_LONG).show();
+            String endpointIp = sharedPref.getString(PAIRED_IP_PROPERTY, DEFAULT_IP);
+            if(!Utilities.isIpValid(endpointIp))
+            {
+                pairToAnotherDevice();
+            }
         }
     }
 
@@ -166,17 +147,11 @@ public class FriendlyGPSpy extends AppCompatActivity {
         builder.setTitle("Pair to device")
                 .setMessage("Enter IP of device you want to pair with")
                 .setView(text)
-                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        saveToSharedPreferences(PAIRED_IP_PROPERTY, text.getText().toString());
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //User canceled dialog
-                    }
-        });
+                .setPositiveButton("Save", (dialog, which) -> {
+                    saveToSharedPreferences(PAIRED_IP_PROPERTY, text.getText().toString());
+                }).setNegativeButton("Cancel", (dialog, which) -> {
+                    //User canceled dialog
+                });
 
         builder.create();
         builder.show();
@@ -195,11 +170,8 @@ public class FriendlyGPSpy extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("My IP")
                 .setMessage("IPv4: " + myIpV4  + "\n" + "IPv6: " + myIpV6)
-                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Done
-                    }
+                .setNeutralButton("Ok", (dialog, which) -> {
+                    //Done
                 });
 
         builder.create();

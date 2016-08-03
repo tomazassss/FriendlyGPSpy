@@ -2,6 +2,8 @@ package com.crazy.specialists.friendlygpspy.communication.server;
 
 import android.util.Log;
 
+import com.crazy.specialists.friendlygpspy.utils.Displayer;
+
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -18,10 +20,12 @@ public class SocketServer implements Runnable, Closeable
     private ServerSocket serverSocket;
     private final int serverPort;
     private boolean isStarted;
+    private final Displayer displayer;
 
-    public SocketServer(final int port)
+    public SocketServer(final int port, final Displayer displayer)
     {
         this.serverPort = port;
+        this.displayer = displayer;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class SocketServer implements Runnable, Closeable
             {
                 socket = serverSocket.accept();
 
-                CommunicationThread commThread = new CommunicationThread(socket);
+                CommunicationThread commThread = new CommunicationThread(socket, displayer);
                 new Thread(commThread).start();
 
             } catch (IOException e)
@@ -75,9 +79,11 @@ public class SocketServer implements Runnable, Closeable
     {
         private Socket clientSocket;
         private BufferedReader input;
+        private Displayer displayer;
 
-        public CommunicationThread(Socket clientSocket)
+        public CommunicationThread(final Socket clientSocket, final Displayer displayer)
         {
+            this.displayer = displayer;
             this.clientSocket = clientSocket;
             try
             {
@@ -98,9 +104,7 @@ public class SocketServer implements Runnable, Closeable
                     String locationRepresentation = input.readLine();
                     if (locationRepresentation != null)
                     {
-                        //TODO: Parse Location from string
-                        //Utilities.showToast(context, locationRepresentation);
-                        Log.w("myApp", "Server received: " + locationRepresentation);
+                        displayer.display("Server received location: " + locationRepresentation);
                     }
                     else
                     {

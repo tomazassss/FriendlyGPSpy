@@ -1,4 +1,4 @@
-package com.crazy.specialists.location;
+package com.crazy.specialists.friendlygpspy.location;
 
 import android.app.AlertDialog;
 import android.app.Service;
