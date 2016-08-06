@@ -8,7 +8,7 @@ Functions:
 - Display location
 
 Implementation:
-- Comunnication through sockets
+- Send encrypted sms with your IP to initiate connection. Comunnication through sockets.
 - Data must be encrypted
 - Permmisions for using GPS module (dialog)
 - GPS module should be turned off after use if it was disabled (not possible)
